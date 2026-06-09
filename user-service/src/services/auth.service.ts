@@ -33,7 +33,11 @@ export const otp = async (firstName: string, lastName: string, email: string, pa
 
     logger.info(`Sending OTP: ${otp} to email: ${email}`);
 
-    await notificationProducer.sendEmailNotification({to:email,subject:"IRCTC OTP",text:`Your OTP is ${otp}`})
+    await notificationProducer.sendEmailNotification({
+        email,
+        otp: Number(otp),
+        ttl: Math.floor(config.OTP_EXPIRY / 60)
+    });
 
     return {otpSessionId} 
     
@@ -108,6 +112,16 @@ export const verifyOtp = async (otp: string, otpSessionId: string) => {
     await redisClient.del(activeSessionKey);
 
     logger.info(`User registered successfully via OTP verification: ${sessionData.email}`);
+
+    try {
+        await notificationProducer.sendWelcomeEmail({
+            email: sessionData.email,
+            firstName: sessionData.firstName,
+        });
+    } catch (error) {
+        logger.error(`Failed to send welcome email to ${sessionData.email}: ${error}`);
+    }
+
     return user;
 };
 

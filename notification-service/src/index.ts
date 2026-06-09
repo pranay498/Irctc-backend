@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import { config } from "./config";
 import logger from "./config/logger";
-import { runEmailConsumer, disconnectConsumer } from "./kafka/consumer/email.consumer";
+import { emailConsumer } from "./kafka/consumer/email.consumer";
 
 const app: Application = express();
 app.use(express.json());
@@ -14,7 +14,7 @@ app.get("/health", (req: Request, res: Response) => {
 const startServer = async () => {
     try {
         // Run the email consumer
-        await runEmailConsumer();
+        await emailConsumer.start();
 
         app.listen(config.PORT, () => {
             logger.info(`🚀 Notification Service running on port ${config.PORT}`);
@@ -25,14 +25,6 @@ const startServer = async () => {
     }
 };
 
-// Graceful Shutdown
-const gracefulShutdown = async () => {
-    logger.info("Received shutdown signal. Cleaning up connections...");
-    await disconnectConsumer();
-    process.exit(0);
-};
 
-process.on("SIGINT", gracefulShutdown);
-process.on("SIGTERM", gracefulShutdown);
 
 startServer();

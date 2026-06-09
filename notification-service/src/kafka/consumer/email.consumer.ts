@@ -1,51 +1,84 @@
-import { kafka } from "../../config/kafka";
+import { Message } from "kafkajs";
+import { consumer } from "../../config/kafka";
 import logger from "../../config/logger";
-import { sendEmail } from "../../services/email.service";
+import {emailServices } from "../../services/email.service";
+import { TOPICS } from "../../utils/constant";
 
-const consumer = kafka.consumer({ groupId: "notification-group" });
+class EmailConsumer {
+    async start() {
+        try {
+            await consumer.connect();
 
-export const runEmailConsumer = async (): Promise<void> => {
-    try {
-        await consumer.connect();
-        await consumer.subscribe({ topic: "send-email", fromBeginning: true });
-        logger.info('🚀 Kafka Email Consumer connected and subscribed to "send-email" topic');
+            logger.info("Kafka Consumer connected successfully");
 
-        await consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                const messageValue = message.value?.toString();
-                if (!messageValue) {
-                    logger.warn("Received empty Kafka message value");
-                    return;
-                }
+            await consumer.subscribe({
+                topics: Object.values(TOPICS),
+                fromBeginning: true,
+            });
 
-                logger.info(`Received send-email event: ${messageValue}`);
+            await consumer.run({
+                eachMessage: async ({ topic, partition, message }) => {
+                    logger.info(`Received message from topic: ${topic}`, {
+                        partition,
+                        offset: message.offset,
+                        key: message.key?.toString(),
+                        value: message.value?.toString(),
+                    });
 
-                try {
-                    const parsedData = JSON.parse(messageValue);
-                    const { to, subject, text, html } = parsedData;
-
-                    if (!to || !subject || !text) {
-                        logger.error("Missing required fields (to, subject, text) in email payload");
-                        return;
-                    }
-
-                    await sendEmail({ to, subject, text, html });
-                } catch (err: any) {
-                    logger.error(`Error processing email task: ${err.message}`);
-                }
-            },
-        });
-    } catch (error) {
-        logger.error(`Failed to start Kafka Email Consumer: ${error}`);
-        throw error;
+                    await this.handleMessage(topic, message);
+                },
+            });
+        } catch (error) {
+            logger.error(`Error in EmailConsumer: ${error}`);
+        }
     }
-};
 
-export const disconnectConsumer = async (): Promise<void> => {
-    try {
-        await consumer.disconnect();
-        logger.info("Kafka Email Consumer disconnected successfully");
-    } catch (error) {
-        logger.error(`Failed to disconnect Kafka Email Consumer: ${error}`);
+    async handleMessage(topic: string, message: Message) {
+        switch (topic) {
+            case TOPICS.OTP_EMAIL:
+                await this.handleOtpEmail(message);
+                break;
+
+            case TOPICS.WELCOME_EMAIL:
+                await this.handleWelcomeEmail(message);
+                break;
+
+            default:
+                logger.warn(`Unknown topic: ${topic}`);
+        }
     }
-};
+
+    async handleOtpEmail(message: Message) {
+        const payload = JSON.parse(message.value?.toString()!)
+
+        const { email, otp, ttl } = payload
+
+        if(!email || !otp) {
+            logger.error("Invalid payload for OTP email", );
+            return
+        }
+        await emailServices.sendOtpEmail({email,otp:Number(otp),ttlMinutes:Number(ttl) || 5})
+        logger.info(`OTP email sent to ${email}`)
+        
+        
+    }
+
+    async handleWelcomeEmail(message: Message) {
+        try {
+            const payload = JSON.parse(message.value?.toString()!);
+            const { email, firstName } = payload;
+
+            if (!email || !firstName) {
+                logger.error("Invalid payload for Welcome email");
+                return;
+            }
+
+            await emailServices.sendWelcomeEmail({ email, firstName });
+            logger.info(`Welcome email sent to ${email}`);
+        } catch (error) {
+            logger.error(`Error handling welcome email message: ${error}`);
+        }
+    }
+}
+
+export const emailConsumer = new EmailConsumer();

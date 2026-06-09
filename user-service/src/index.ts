@@ -1,15 +1,13 @@
 import express, { Application, Request, Response } from "express";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-
 import authRoutes from "./routes/auth.route";
-
 import { config } from "./config/index";
 import logger from "./config/logger";
 import { connectRedis } from "./config/redis";
-
 import { corsMiddleware } from "./middlewares/cors.middleware";
 import { errorHandler } from "./middlewares/error.middleware";
+import { connectKafka } from "./config/kafka";
 
 const app: Application = express();
 
@@ -40,6 +38,8 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectRedis();
+
+    await connectKafka()
 
     app.listen(config.PORT, () => {
       logger.info(`🚀 User Service running on port ${config.PORT}`);
