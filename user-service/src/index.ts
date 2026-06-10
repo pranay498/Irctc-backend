@@ -8,6 +8,7 @@ import { connectRedis } from "./config/redis";
 import { corsMiddleware } from "./middlewares/cors.middleware";
 import { errorHandler } from "./middlewares/error.middleware";
 import { connectKafka } from "./config/kafka";
+import { requestLogger } from "./middlewares/req.middleware";
 
 const app: Application = express();
 
@@ -18,11 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Print ALL requests
-app.use((req: Request, res: Response, next) => {
-  console.log(`Incoming Request: ${req.method} ${req.url}`);
-  next();
-});
+// Print ALL requests via requestLogger
+app.use(requestLogger);
 
 // Health Route
 app.get("/health", (req: Request, res: Response) => {
