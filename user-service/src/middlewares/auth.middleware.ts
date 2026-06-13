@@ -15,6 +15,14 @@ export const authMiddleware = async (
     next: NextFunction
 ) => {
     try {
+        // 1. Check if API Gateway already authenticated the user and passed the ID
+        const gatewayUserId = req.headers["x-user-id"];
+        if (gatewayUserId) {
+            req.user = { id: Number(gatewayUserId) };
+            return next();
+        }
+
+        // 2. Fall back to direct Bearer token verification if request did not go through Gateway
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             throw new ApiError(401, "Authorization token required");

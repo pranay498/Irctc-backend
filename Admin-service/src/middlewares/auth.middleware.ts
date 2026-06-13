@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "../config";
 import { ApiError } from "../utils/ApiError";
-import logger from "../config/logger";
 
 export interface AuthenticatedRequest extends Request {
     user?: {
@@ -10,12 +9,18 @@ export interface AuthenticatedRequest extends Request {
     };
 }
 
-export const requireAuth = async (
+export const authMiddleware = async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ) => {
     try {
+     
+        const gatewayUserId = req.headers["x-user-id"];
+        if (gatewayUserId) {
+            req.user = { id: Number(gatewayUserId) };
+            return next();
+        }
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             throw new ApiError(401, "Authorization token required");
@@ -27,21 +32,8 @@ export const requireAuth = async (
         }
 
         const decoded = jwt.verify(token, config.JWT_ACCESS_SECRET) as { id: number };
-
-        if (!decoded || !decoded.id) {
-            throw new ApiError(401, "Invalid token payload");
-        }
-
-        // Attach user context to request for downstream services
-        req.user = {
-            id: decoded.id,
-        };
-
-        // Add user ID to headers for proxied requests
-        req.headers["x-user-id"] = decoded.id.toString();
-
-        logger.info(`User ${decoded.id} authenticated successfully`);
-
+        req.user = { id: decoded.id };
+        
         next();
     } catch (error) {
         if (error instanceof jwt.JsonWebTokenError) {
