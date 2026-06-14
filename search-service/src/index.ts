@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { config } from "./config";
 import logger from "./config/logger";
 import { connectElasticsearch } from "./config/elasticsearch";
-import { connectKafka } from "./config/kafka";
+import { searchConsumer } from "./kafka/producer/search.consumer";
 
 const app = express();
 
@@ -20,7 +20,7 @@ app.get("/health", (req: Request, res: Response) => {
 const startServer = async () => {
     try {
         await connectElasticsearch();
-        await connectKafka();
+        await searchConsumer.start();
 
         app.listen(config.PORT, () => {
             logger.info(`🚀 Search Service running on port ${config.PORT}`);

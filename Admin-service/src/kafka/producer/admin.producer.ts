@@ -66,6 +66,18 @@ class AdminProducer {
             }
         );
     }
+
+    async publishRouteCreated(routeData: any): Promise<void> {
+        return this.sendMessage(
+            TOPICS.ROUTE_CREATED,
+            `route-${routeData.id}`,
+            {
+                eventType: "ROUTE_CREATED",
+                data: routeData,
+                timestamp: new Date().toISOString(),
+            }
+        );
+    }
 }
 
 export const adminProducer = new AdminProducer();

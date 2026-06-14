@@ -6,10 +6,10 @@ export const esClient = new Client({
   node: config.ELASTICSEARCH_NODE,
 });
 
-const STATION_INDEX = "stations";
-const TRAIN_INDEX = "trains";
-const ROUTE_INDEX = "routes";
-const SCHEDULE_INDEX = "schedules";
+export const STATION_INDEX = "stations";
+export const TRAIN_INDEX = "trains";
+export const ROUTE_INDEX = "routes";
+export const SCHEDULE_INDEX = "schedules";
 
 /**
  * Create indices with mappings that power:
