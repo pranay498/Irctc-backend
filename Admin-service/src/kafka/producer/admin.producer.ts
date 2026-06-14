@@ -54,6 +54,18 @@ class AdminProducer {
             }
         );
     }
+
+    async publishScheduleCreated(scheduleData: any): Promise<void> {
+        return this.sendMessage(
+            TOPICS.SCHEDULE_CREATED,
+            `schedule-${scheduleData.scheduleId}`,
+            {
+                eventType: "SCHEDULE_CREATED",
+                data: scheduleData,
+                timestamp: new Date().toISOString(),
+            }
+        );
+    }
 }
 
 export const adminProducer = new AdminProducer();
