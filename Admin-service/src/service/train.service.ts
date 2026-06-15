@@ -107,15 +107,11 @@ export const createRoute = async (data: CreateRouteInput) => {
     throw new ApiError(400, "One or more station IDs are invalid");
   }
 
-  const sorted = [...stations].sort(
-    (a, b) => a.sequenceNumber - b.sequenceNumber,
-  );
+  const sorted = [...stations].sort((a, b) => a.sequenceNumber - b.sequenceNumber,);
+
   for (let i = 0; i < sorted.length; i++) {
     if (sorted[i].sequenceNumber !== i + 1) {
-      throw new ApiError(
-        400,
-        "Sequence numbers must be continuous starting from 1",
-      );
+      throw new ApiError(400,"Sequence numbers must be continuous starting from 1",);
     }
   }
 

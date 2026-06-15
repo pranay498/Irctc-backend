@@ -68,7 +68,7 @@ class SearchService {
       await esClient.index({
         index: TRAIN_INDEX,
         id: train.id,
-        document: doc,
+        document:doc,
         refresh: true,
       });
 
