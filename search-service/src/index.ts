@@ -5,6 +5,7 @@ import { config } from "./config";
 import logger from "./config/logger";
 import { connectElasticsearch } from "./config/elasticsearch";
 import { searchConsumer } from "./kafka/producer/search.consumer";
+import searchRoutes from "./routes/search.route";
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.use(cors({ origin: config.ALLOWED_ORIGINS }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use("/api/v1/search", searchRoutes);
 
 app.get("/health", (req: Request, res: Response) => {
     res.status(200).send("Search Service is healthy");

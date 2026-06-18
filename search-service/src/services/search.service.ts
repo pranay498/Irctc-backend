@@ -235,7 +235,7 @@ class SearchService {
 
     const result = await esClient.search({
       index: TRAIN_INDEX,
-      query,
+      query:query,
       size: 50,
     });
 
