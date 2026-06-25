@@ -39,9 +39,7 @@ interface ScheduleCancelledEvent {
 
 // ─── Initialize Inventory ─────────────────────────────────────────────────────
 
-export const initializeInventory = async (
-  eventData: ScheduleCreatedEvent,
-): Promise<void> => {
+export const initializeInventory = async (eventData: ScheduleCreatedEvent,): Promise<void> => {
   const { scheduleId, trainId, trainNumber, trainName, departureDate, seats } =
     eventData;
 

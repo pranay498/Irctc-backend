@@ -18,9 +18,7 @@ export interface SeatFilters {
      toSeq?: number;
 }
 
-/**
- * Retry wrapper with exponential backoff.
- */
+
 async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
      let lastError: any;
      for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -44,9 +42,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
      throw lastError;
 }
 
-/**
- * Extract error message from axios error.
- */
+
 export function extractError(error: any) {
      if (error.response?.data) {
           return {
@@ -69,7 +65,8 @@ export const inventoryClient = {
      async getSeats(scheduleId: string, filters: SeatFilters = {}): Promise<any> {
           return withRetry(async () => {
                const params: any = {};
-               if (filters.status) params.status = filters.status;
+               if (filters.status) 
+                params.status = filters.status;
                if (filters.seatType) params.seatType = filters.seatType;
                if (filters.fromSeq) params.fromSeq = filters.fromSeq;
                if (filters.toSeq) params.toSeq = filters.toSeq;

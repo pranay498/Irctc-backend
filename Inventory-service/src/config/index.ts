@@ -19,6 +19,7 @@ export const config = {
     REDIS_USER_TTL: Number(process.env.REDIS_USER_TTL) || 86400, // 1 day in seconds
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
     KAFKA_BROKERS: process.env.KAFKA_BROKERS || "localhost:9092",
+    INTERNAL_SERVICE_KEY: process.env.INTERNAL_SERVICE_KEY || "internal_secret_key_123",
 } as const;
 
 

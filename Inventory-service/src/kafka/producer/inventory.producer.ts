@@ -49,13 +49,7 @@ class InventoryProducer {
         throw lastError;
     }
 
-    async publishSeatAvailabilityUpdated(
-        scheduleId: string,
-        trainId: string,
-        available: number,
-        locked: number,
-        booked: number
-    ): Promise<any> {
+    async publishSeatAvailabilityUpdated(scheduleId: string, trainId: string, available: number, locked: number, booked: number): Promise<any> {
         return this.sendMessage(
             TOPICS.SEAT_AVAILABILITY_UPDATED,
             `schedule-${scheduleId}`,

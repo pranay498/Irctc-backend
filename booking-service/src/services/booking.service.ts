@@ -6,24 +6,7 @@ import { config } from "../config/index";
 import * as saga from "./saga.service";
 import { inventoryClient } from "./inventoryClient";
 
-declare function acquireSeatLocks(
-  scheduleId: string,
-  seatIds: string[],
-  tempId: string,
-  ttl: number,
-  fromSeq?: number,
-  toSeq?: number
-): Promise<{ acquired: boolean; lockValue: string }>;
-
-declare function releaseSeatLocks(
-  scheduleId: string,
-  seatIds: string[],
-  lockValue: string,
-  fromSeq?: number,
-  toSeq?: number
-): Promise<void>;
-
-
+import { acquireSeatLocks, releaseSeatLocks } from "../utils/distributesLock";
 
 // --- Stub interfaces for externals (fill in as needed) ---
 interface SeatData {
@@ -88,17 +71,8 @@ const saveIdempotency = async (key:string, response:CreateBookingResponse)=> {
 
 class BookingService{
 
-
 // --- Main function ---
- createBooking = async (
-  userId: string,
-  scheduleId: string,
-  seatIds: string[],
-  passengers: Passenger[],
-  idempotencyKey: string,
-  fromStationId?: string,
-  toStationId?: string,
-  fromSeq?: number,
+ createBooking = async ( userId: string, scheduleId: string,seatIds: string[], passengers: Passenger[], idempotencyKey: string, fromStationId?: string, toStationId?: string, fromSeq?: number,
   toSeq?: number
 ): Promise<CreateBookingResponse> => {
   // 1. Validate input

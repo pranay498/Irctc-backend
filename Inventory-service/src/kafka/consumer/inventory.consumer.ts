@@ -21,15 +21,11 @@ class InventoryConsumer {
             logger.info("🚀 Inventory consumer subscribed successfully");
 
             await consumer.run({
-                eachMessage: withDLQ(
-                    producer,
-                    TOPICS.DLQ_BOOKING,
-                    logger,
-                    async ({ topic, partition, message, parsedValue }) => {
-                        logger.info(`Processing topic ${topic}`, {
-                            partition,
-                            offset: message.offset,
-                        });
+                eachMessage: withDLQ(producer, TOPICS.DLQ_BOOKING, logger, async ({ topic, partition, message, parsedValue }) => {
+                    logger.info(`Processing topic ${topic}`, {
+                        partition,
+                        offset: message.offset,
+                    });
 
                         switch (topic) {
                             case TOPICS.SCHEDULE_CREATED:
