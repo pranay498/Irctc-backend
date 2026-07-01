@@ -8,10 +8,10 @@ export interface CustomRequest extends Request {
 }
 
 export const requestLogger = (req: CustomRequest, res: Response, next: NextFunction) => {
-    // 1. Generate or extract a unique Request ID for request tracing
+    
     req.id = (req.headers["x-request-id"] as string) || crypto.randomUUID();
     
-    // 2. Mark the starting time
+
     req.startTime = Date.now();
 
     // 3. Log incoming request details

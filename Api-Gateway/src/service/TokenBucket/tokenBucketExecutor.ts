@@ -77,9 +77,6 @@ export class TokenBucketExecutor {
         throw err;
       }
     }
-    return await this.redis.eval(LUA_SCRIPT, {
-      keys: [key],
-      arguments: args,
-    }) as [number, number, number];
+    return await this.redis.eval(LUA_SCRIPT, {keys: [key],arguments: args,}) as [number, number, number];
   }
 }

@@ -2,6 +2,7 @@ import logger from "../config/logger";
 import { prisma } from "../config/prisma";
 import { adminProducer } from "../kafka/producer/admin.producer";
 import { ApiError } from "../utils/ApiError";
+import { ScheduleStatus } from "../generated/prisma/client";
 
 interface CreateScheduleInput {
   trainId: string;
@@ -93,3 +94,54 @@ export const createSchedule = async (data: CreateScheduleInput) => {
 
   return schedule;
 };
+
+interface GetAllSchedulesQuery {
+  trainId?: string;
+  status?: ScheduleStatus;
+  date?: string;
+}
+
+export const getAllSchedules = async (query: GetAllSchedulesQuery = {}) => {
+  const where: any = {};
+  if (query.trainId) where.trainId = query.trainId;
+  if (query.status) where.status = query.status;
+  if (query.date) {
+    const parsedDate = new Date(query.date);
+    if (!isNaN(parsedDate.getTime())) {
+      where.departureDate = parsedDate;
+    }
+  }
+
+  return prisma.schedule.findMany({
+    where,
+    include: {
+      train: {
+        include: {
+          route: {
+            include: {
+              routeStations: {
+                include: { station: true },
+                orderBy: { sequenceNumber: 'asc' },
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { departureDate: 'asc' },
+  });
+};
+
+export const cancelSchedule = async (scheduleId: string) => {
+  const schedule = await prisma.schedule.findUnique({ where: { id: scheduleId } });
+  if (!schedule) throw new ApiError(404, 'Schedule not found');
+
+  const updated = await prisma.schedule.update({
+    where: { id: scheduleId },
+    data: { status: 'CANCELLED' },
+  });
+
+  await adminProducer.publishScheduleCancelled(updated);
+  return updated;
+};
+

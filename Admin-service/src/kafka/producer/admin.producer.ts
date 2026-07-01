@@ -67,6 +67,23 @@ class AdminProducer {
         );
     }
 
+    async publishScheduleCancelled(schedule: any): Promise<void> {
+        return this.sendMessage(
+            TOPICS.SCHEDULE_CANCELLED,
+            `schedule-${schedule.id}`,
+            {
+                eventType: "SCHEDULE_CANCELLED",
+                data: {
+                    id: schedule.id,
+                    scheduleId: schedule.id,
+                    trainId: schedule.trainId,
+                    status: schedule.status,
+                },
+                timestamp: new Date().toISOString(),
+            }
+        );
+    }
+
     async publishRouteCreated(routeData: any): Promise<void> {
         return this.sendMessage(
             TOPICS.ROUTE_CREATED,
