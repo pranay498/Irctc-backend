@@ -7,6 +7,7 @@ import logger from "./config/logger";
 
 import { errorHandler } from "./middlewares/error.middleware";
 import { notFoundHandler } from "./middlewares/notFound.middleware";
+import { connectRedis } from "./config/redis";
 import routes from "./routes/index"
 
 const app: Application = express();
@@ -42,8 +43,9 @@ app.use(notFoundHandler);
 // Error handling middleware
 app.use(errorHandler);
 
-const startServer = () => {
+const startServer = async () => {
     try {
+        await connectRedis();
         app.listen(config.PORT, () => {
             logger.info(`🚀 API Gateway running on port ${config.PORT} in ${config.NODE_ENV} mode`);
         });

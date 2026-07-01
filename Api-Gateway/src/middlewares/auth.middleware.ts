@@ -31,8 +31,6 @@ export const requireAuth = async (
         if (!decoded || !decoded.id) {
             throw new ApiError(401, "Invalid token payload");
         }
-
-        // Attach user context to request for downstream services
         req.user = {
             id: decoded.id,
         };

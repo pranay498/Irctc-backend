@@ -15,6 +15,7 @@ class CircuitBreaker implements ICircuitBreaker {
   public state: string;
   public nextAttempt: Date;
 
+  // ─── Constructor ────────────────────────────────────────────────────────────
   constructor(
     serviceName: string,
     threshold = Number(config.CIRCUIT_BREAKER_THRESHOLD),
@@ -26,6 +27,8 @@ class CircuitBreaker implements ICircuitBreaker {
     this.timeout = timeout;
     this.state = "closed";
     this.nextAttempt = new Date();
+
+    
   }
 
   // FIX: execute() now accepts (req, res, fn) — fn is the actual axios call
@@ -48,14 +51,14 @@ class CircuitBreaker implements ICircuitBreaker {
     }
   }
 
-  // FIX: was "onSucess" (typo) — renamed to onSuccess; removed unused params
   onSuccess() {
     this.failureCount = 0;
-    if (this.state === "half-open") this.state = "closed";
+    if (this.state === "half-open") 
+        this.state = "closed";
     logger.info(`Circuit closed: ${this.serviceName}`);
   }
 
-  // FIX: removed unused params
+
   onFailure() {
     this.failureCount++;
     if (this.failureCount >= this.threshold) {
@@ -88,15 +91,7 @@ export const circuitBreakers = {
 export default circuitBreakers;
 
 
-async function forwardRequest(
-  serviceUrl: string,
-  path: string,
-  body: any,
-  method: string,
-  headers: Record<string, any>,
-  query: Record<string, any>,
-  breaker: CircuitBreaker,
-) {
+async function forwardRequest( serviceUrl: string, path: string,body: any,method: string,headers: Record<string, any>, query: Record<string, any>,breaker: CircuitBreaker,) {
   const url = `${serviceUrl}${path}`;
 
  
